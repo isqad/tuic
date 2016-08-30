@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: tuic_app
+    command: bash
+    volumes:
+      - '.:/app'
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo

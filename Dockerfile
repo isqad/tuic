@@ -1,0 +1,3 @@
+FROM clojure
+
+WORKDIR /app
