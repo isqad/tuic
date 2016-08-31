@@ -6,7 +6,16 @@ services:
       context: .
       dockerfile: ./Dockerfile
     image: tuic_app
-    command: bash
+
+  web:
+    extends:
+      service: app
+    environment:
+      - VIRTUAL_HOST=tuic.dev,*.tuic.dev
+    networks:
+      - default
+      - nginx
+    command: 'lein ring server'
     volumes:
       - '.:/app'
     depends_on:
@@ -14,3 +23,8 @@ services:
 
   mongo:
     image: mongo
+
+networks:
+  nginx:
+    external:
+      name: nginx_default
