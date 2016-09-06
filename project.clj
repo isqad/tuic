@@ -10,6 +10,6 @@
                  [compojure "1.5.1"]
                  [com.cemerick/friend "0.2.3"]]
   :plugins [[lein-ring "0.9.7"]]
-  :ring {:handler tuic.core/app-handler}
+  :ring {:handler tuic.core/app}
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

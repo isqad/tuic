@@ -1,6 +1,8 @@
 (ns tuic.core
   (:require [monger.core :as mg]
-            [monger.collection :as mc]))
+            [monger.collection :as mc]
+            [compojure.core :refer :all]
+            [compojure.route :as route]))
 
 (defn fruits
   []
@@ -11,7 +13,9 @@
     (mc/find-maps db coll {:name "Orange"})))
 
 (defn app-handler
-  [request]
-  {:status 200
-   :headers {"Content-Type" "text/html"}
-   :body (str "<h1>Fruits</h1><br/ >" (apply str (fruits)))})
+  []
+  (str "<h1>Fruits</h1><br/ >" (apply str (fruits))))
+
+(defroutes app
+  (GET "/" [] (app-handler))
+  (route/not-found "<h1>404 Page not found</h1>"))
