@@ -7,6 +7,7 @@
                  [com.novemberain/monger "3.0.2"]
                  [ring/ring-core "1.5.0"]
                  [ring/ring-jetty-adapter "1.4.0"]
+                 [compojure "1.5.1"]
                  [com.cemerick/friend "0.2.3"]]
   :plugins [[lein-ring "0.9.7"]]
   :ring {:handler tuic.core/app-handler}
