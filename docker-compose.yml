@@ -6,10 +6,17 @@ services:
       context: .
       dockerfile: ./Dockerfile
     image: tuic_app
+    volumes:
+      - '.:/app'
+      - maven-repository:/root/.m2
+    depends_on:
+      - pg
 
   web:
-    extends:
-      service: app
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: tuic_app
     environment:
       - VIRTUAL_HOST=tuic.dev,*.tuic.dev
     networks:
@@ -20,12 +27,12 @@ services:
       - '.:/app'
       - maven-repository:/root/.m2
     depends_on:
-      - mongo
+      - pg
 
-  mongo:
-    image: mongo
+  pg:
+    image: postgres:9.6.1
     volumes:
-      - mongo-db:/data/db
+      - db-data:/var/lib/postgresql/data
 
 networks:
   nginx:
@@ -37,5 +44,5 @@ volumes:
     external:
       name: maven-repository
 
-  mongo-db:
+  db-data:
     driver: local
