@@ -31,6 +31,9 @@ services:
 
   pg:
     image: postgres:9.6.1
+    environment:
+      - POSTGRES_DB=tuic
+      - POSTGRES_USER=tuic
     volumes:
       - db-data:/var/lib/postgresql/data
 

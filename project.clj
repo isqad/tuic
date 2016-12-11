@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/java.jdbc "0.7.0-alpha1"]
                  [org.postgresql/postgresql "9.4.1212"]
+                 [joda-time "2.9.6"]
                  [ring/ring-core "1.5.0"]
                  [ring/ring-jetty-adapter "1.4.0"]
                  [compojure "1.5.1"]
