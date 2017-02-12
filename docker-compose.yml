@@ -30,7 +30,7 @@ services:
       - pg
 
   pg:
-    image: postgres:9.6.1
+    image: postgres:9.6
     environment:
       - POSTGRES_DB=tuic
       - POSTGRES_USER=tuic
