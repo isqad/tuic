@@ -14,17 +14,27 @@
   []
   (. (DateTimeFormat/forPattern "yyyyMMddHHmmss") print (DateTime.)))
 
-(defn create
+(defn create!
   "Creates new migration files"
   [timestamp]
-  (with-open [w (io/writer (str path "/" timestamp ".up.sql"))]
-    (.write w (str "--put some sql statements for up migrations")))
-  (with-open [w (io/writer (str path "/" timestamp ".down.sql"))]
-    (.write w (str "--put some sql statements for down migrations"))))
+  (let [up-migration (str path "/" timestamp ".up.sql")
+        down-migration (str path "/" timestamp ".down.sql")]
+    (with-open [w (io/writer up-migration)]
+      (.write w (str "--put some sql statements for up migrations")))
+    (with-open [w (io/writer down-migration)]
+      (.write w (str "--put some sql statements for down migrations")))
+    {:up (io/file up-migration) :down (io/file down-migration)}))
 
 (defn migration-label
-  [filename]
-  (last (re-find re-up filename)))
+  [filename re-filter]
+  (last (re-find re-filter filename)))
+
+(defn migration?
+  [direction file]
+  (-> file
+      .getName
+      (migration-label direction)
+      some?))
 
 (defn create-schema-migrations!
   []
@@ -32,19 +42,28 @@
                       (sql/create-table-ddl
                         "if not exists schema_migrations"
                         [[:label "varchar(255)" "not null" "primary key"]])))
-
+; TODO: multimethod
 (defn execute-migration!
   "Executes sql statements from file"
-  [file]
-  (let [label (migration-label (.getName file))]
+  [direction file]
+  (let [label (migration-label (.getName file) direction)]
     (sql/with-db-transaction [trans-conn db/pg]
-      (sql/insert! db/pg schema-migrations {:label label})
+      (if (= direction re-up)
+        (sql/insert! db/pg schema-migrations {:label label})
+        (sql/delete! db/pg schema-migrations ["label = ?" label]))
       (sql/execute! db/pg [(slurp (.getAbsolutePath file))]))))
 
-; TODO: execute-down!
-; TODO down!
+(defn execute-migrations!
+  [direction]
+  (->> (file-seq (io/file path))
+       (filter (partial migration? direction))
+       (map #(execute-migration! direction %))))
 
 (defn migrate!
   []
   (create-schema-migrations!)
-  (map #(execute-migration! %) (filter (comp migration-label #(.getName %)) (file-seq (io/file path)))))
+  (execute-migrations! re-up))
+
+(defn down!
+  []
+  (execute-migrations! re-down))

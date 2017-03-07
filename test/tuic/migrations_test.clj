@@ -5,6 +5,16 @@
   (:import [org.joda.time DateTime DateTimeUtils]
            [org.joda.time.format DateTimeFormat]))
 
+(deftest migration?-test
+  (testing "up migration"
+    (let [migrations (create! (timestamp))
+          up-migration-file (:up migrations)
+          down-migration-file (:down migrations)]
+      (is (= (migration? re-up up-migration-file) true))
+      (is (= (migration? re-down down-migration-file) true))
+      (is (= (migration? re-up down-migration-file) false))
+      (is (= (migration? re-down up-migration-file) false)))))
+
 (deftest timestamp-test
   (testing "generate timestamp"
     (try
@@ -18,14 +28,11 @@
     (try
       (DateTimeUtils/setCurrentMillisFixed 1000)
       (let [current-timestamp (. (DateTimeFormat/forPattern "yyyyMMddHHmmss") print (DateTime.))
-            _ (create current-timestamp)
-            migrations-path "resources/migrations/"
-            up-filename (str migrations-path current-timestamp ".up.sql")
-            down-filename (str migrations-path current-timestamp ".down.sql")
-            migration-file-up (as-file up-filename)
-            migration-file-down (as-file down-filename)]
-        (is (= (.exists migration-file-up) true))
-        (is (= (.exists migration-file-down) true))
-        (delete-file up-filename)
-        (delete-file down-filename))
+            migrations (create! current-timestamp)
+            up-file (:up migrations)
+            down-file (:down migrations)]
+        (is (= (.exists up-file)) true)
+        (is (= (.exists down-file)) true)
+        (delete-file (.getAbsolutePath up-file))
+        (delete-file (.getAbsolutePath down-file)))
       (finally (DateTimeUtils/setCurrentMillisSystem)))))
