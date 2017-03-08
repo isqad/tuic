@@ -14,6 +14,23 @@
   []
   (. (DateTimeFormat/forPattern "yyyyMMddHHmmss") print (DateTime.)))
 
+(defn migration-label
+  [filename re-filter]
+    (last (re-find re-filter filename)))
+
+(defn migrations-sort-by
+  [direction coll]
+  (if (= direction re-up)
+    (sort coll)
+    (reverse (sort coll))))
+
+(defn create-schema-migrations!
+  []
+  (sql/db-do-commands db/pg
+                      (sql/create-table-ddl
+                        "if not exists schema_migrations"
+                        [[:label "varchar(255)" "not null" "primary key"]])))
+
 (defn create!
   "Creates new migration files"
   [timestamp]
@@ -25,10 +42,6 @@
       (.write w (str "--put some sql statements for down migrations")))
     {:up (io/file up-migration) :down (io/file down-migration)}))
 
-(defn migration-label
-  [filename re-filter]
-  (last (re-find re-filter filename)))
-
 (defn migration?
   [direction file]
   (-> file
@@ -36,13 +49,13 @@
       (migration-label direction)
       some?))
 
-(defn create-schema-migrations!
-  []
-  (sql/db-do-commands db/pg
-                      (sql/create-table-ddl
-                        "if not exists schema_migrations"
-                        [[:label "varchar(255)" "not null" "primary key"]])))
-; TODO: multimethod
+(defn migration-exists?
+  [direction file]
+  (let [label (migration-label (.getName file) direction)]
+    (if (= direction re-up)
+      (empty? (sql/query db/pg ["SELECT 1 FROM schema_migrations WHERE label = ?", label]))
+      (not (empty? (sql/query db/pg ["SELECT 1 FROM schema_migrations WHERE label = ?", label]))))))
+
 (defn execute-migration!
   "Executes sql statements from file"
   [direction file]
@@ -57,6 +70,8 @@
   [direction]
   (->> (file-seq (io/file path))
        (filter (partial migration? direction))
+       (filter (partial migration-exists? direction))
+       (migrations-sort-by direction)
        (map #(execute-migration! direction %))))
 
 (defn migrate!
