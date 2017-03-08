@@ -1,10 +1,43 @@
 # tuic
 
-FIXME: description
+Work in progress...
+
+## Development
+
+### Working with migrations
+
+#### Up migrations
+
+```bash
+$ bin/repl
+```
+
+```
+user=> (use 'tuic.migrations)
+user=> (create! (timestamp))
+```
+
+Write some up and down sql code to created migration files...
+
+```
+user=> (migrate!)
+```
+
+#### Down migrations
+
+```
+user=> (down!)
+```
+
+### Run tests
+
+```bash
+$ bin/test
+```
 
 ## Installation
 
-Download from http://example.com/FIXME.
+FIXME
 
 ## Usage
 
@@ -24,13 +57,16 @@ FIXME: listing of options this app accepts.
 
 ...
 
-### Any Other Sections
-### That You Think
-### Might be Useful
+### Roadmap
+
+* Plug TravisCI
+* Write more tests
+* Users sign up and sign in via "friend"
+...
 
 ## License
 
-Copyright © 2016 FIXME
+Copyright © 2017 @squad
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
